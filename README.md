@@ -10,6 +10,7 @@ Retrofit, rxjava, CardView, RecyclerView,
 Entry, Api and Model layers are seperated.
 
 * Load recently 10 records.
+* Showing patient's name, gender, birthday.
 * Click to view details.
 * Well UI design.
 
