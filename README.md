@@ -10,5 +10,6 @@ Retrofit, rxjava, CardView, RecyclerView,
 Entry, Api and Model layers are seperated.
 
 Screan shots:
+
 <img src="https://github.com/EricConnect/ehealth/blob/master/arts/Screenshot_1544151961.png" heigh="35%" width="35%"> <img src="https://github.com/EricConnect/ehealth/blob/master/arts/Screenshot_1544151971.png" heigh="35%" width="35%">
 
