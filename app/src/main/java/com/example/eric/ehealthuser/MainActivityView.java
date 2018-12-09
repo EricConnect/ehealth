@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface MainActivityView {
     void displayDataOnRecyclerView(List<UhnPatient> list);
+    void displayNoData();
 
 }

@@ -12,7 +12,8 @@
 bin/
 gen/
 out/
-
+.DS_Store
+.idea/vcs.xml
 # Gradle files
 .gradle/
 build/
