@@ -1,12 +1,6 @@
 package com.example.eric.ehealthuser.api;
 
-import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.dstu3.model.Patient;
-import org.hl7.fhir.instance.model.api.IBaseBundle;
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.rest.client.api.IGenericClient;
-import ca.uhn.fhir.rest.param.DateRangeParam;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -52,8 +46,6 @@ public class ApiService {
     public UserService getPatientService() {
         return retrofit.create(UserService.class);
     }
-
-
 
 
 }
