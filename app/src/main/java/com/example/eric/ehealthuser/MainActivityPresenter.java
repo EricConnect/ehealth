@@ -12,8 +12,10 @@ import com.example.eric.ehealthuser.model.UhnPatient;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -24,6 +26,7 @@ public class MainActivityPresenter implements IPresenter {
 
     private MainActivityView mView;
     private UserService service = ApiService.getInstance().getPatientService();
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
     @SuppressLint("CheckResult")
@@ -31,7 +34,7 @@ public class MainActivityPresenter implements IPresenter {
 
         this.mView = view;
 
-        service.getUserList().subscribeOn(Schedulers.io())
+        Observable<List<UhnPatient>> obs = service.getUserList().subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorReturn(new Function<Throwable, Bundle>() {
                     @Override
@@ -41,9 +44,17 @@ public class MainActivityPresenter implements IPresenter {
                         return null;
                     }
                 })
-                .map(new TransformBundleToList())
-                .subscribe(new ObservePatientList());
+                .map(new TransformBundleToList());
 
+        obs.subscribe(new ObservePatientList());
+
+    }
+
+    @Override
+    public void onDestroy() {
+        if (compositeDisposable != null){
+            compositeDisposable.clear();
+        }
     }
 
     ///
@@ -73,9 +84,13 @@ public class MainActivityPresenter implements IPresenter {
         }
     }
 
+    // Observe list size greater then 0 show list data to recycler view
+    // otherwise show a message no data to show.
     public class ObservePatientList implements Observer<List<UhnPatient>>{
         @Override
         public void onSubscribe(Disposable d) {
+
+            compositeDisposable.add(d);
 
         }
 

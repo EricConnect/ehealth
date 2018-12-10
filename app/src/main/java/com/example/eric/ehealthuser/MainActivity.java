@@ -64,4 +64,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         msgTextView.setText("No data please try again.");
         msgTextView.setVisibility(View.VISIBLE);
     }
+
+    @Override
+    protected void onDestroy() {
+        presenter.onDestroy();
+        super.onDestroy();
+    }
 }
