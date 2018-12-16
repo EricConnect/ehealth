@@ -10,6 +10,7 @@ import com.example.eric.ehealthuser.entity.PatientEntry;
 import com.example.eric.ehealthuser.model.UhnPatient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -25,42 +26,60 @@ public class MainActivityPresenter implements IPresenter {
     private final String TAG = "MainActivityPresenter";
 
     private MainActivityView mView;
-    private UserService service = ApiService.getInstance().getPatientService();
+    private UserService service; //= ApiService.getInstance().getPatientService();
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private PatientListSubscriber patientListSubscriber; // = new PatientListSubscriber(mView);
+    private TransformBundleToList transformBundleToList; // = new TransformBundleToList();
+
+    public MainActivityPresenter() {
+        patientListSubscriber = new PatientListSubscriber();
+        transformBundleToList = new TransformBundleToList();
+        service = ApiService.getInstance().getPatientService();
+
+    }
 
 
     @SuppressLint("CheckResult")
     public void displayDataOn(MainActivityView view) {
 
         this.mView = view;
+        try {
 
-        Observable<List<UhnPatient>> obs = service.getUserList().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .onErrorReturn(new Function<Throwable, Bundle>() {
-                    @Override
-                    public Bundle apply(Throwable throwable) throws Exception {
-                        Log.d(TAG, "error at get data.");
-                        Log.d(TAG, throwable.getMessage());
-                        return null;
-                    }
-                })
-                .map(new TransformBundleToList());
+            this.getPatientList(this.service, this.transformBundleToList).subscribe(patientListSubscriber);
 
-        obs.subscribe(new ObservePatientList());
+        } catch (Exception e) {
+            Log.d(TAG, e.toString());
+        }
 
+    }
+
+
+    public Observable<List<UhnPatient>> getPatientList(UserService service, TransformBundleToList transformBundleToList) {
+
+        Observable<List<UhnPatient>> obs = Observable.just(Collections.<UhnPatient>emptyList());
+        try {
+            obs = service.getUserList().subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .map(transformBundleToList);
+
+        } catch (Exception e) {
+            Log.d(TAG, "getPatientList: Error, on :" + e.getMessage());
+        }
+        return obs;
     }
 
     @Override
     public void onDestroy() {
-        if (compositeDisposable != null){
+        if (compositeDisposable != null) {
             compositeDisposable.clear();
         }
     }
 
+
     ///
     // transform bundle to list
     //
-    public class TransformBundleToList implements Function<Bundle, List<UhnPatient>>{
+    public class TransformBundleToList implements Function<Bundle, List<UhnPatient>> {
         @Override
         public List<UhnPatient> apply(Bundle bundle) {
             List<UhnPatient> patientList = new ArrayList<>();
@@ -76,7 +95,7 @@ public class MainActivityPresenter implements IPresenter {
                             )
                     );
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 Log.d(TAG, "Error on get data from server." + e.getMessage());
             }
             Log.d(TAG, "map funtion run up. size:" + patientList.size());
@@ -86,7 +105,9 @@ public class MainActivityPresenter implements IPresenter {
 
     // Observe list size greater then 0 show list data to recycler view
     // otherwise show a message no data to show.
-    public class ObservePatientList implements Observer<List<UhnPatient>>{
+    public class PatientListSubscriber implements Observer<List<UhnPatient>> {
+
+
         @Override
         public void onSubscribe(Disposable d) {
 
@@ -96,9 +117,11 @@ public class MainActivityPresenter implements IPresenter {
 
         @Override
         public void onNext(List<UhnPatient> uhnPatients) {
-            if (uhnPatients.size() >0){
+            Log.d(TAG, "onNext: is null this view " + mView.toString());
+            if (uhnPatients == null) mView.displayNoData();
+            if (uhnPatients.size() > 0) {
                 mView.displayDataOnRecyclerView(uhnPatients);
-            }else{
+            } else {
                 Log.d(TAG, "patient list size less then 1");
                 mView.displayNoData();
             }
@@ -108,7 +131,8 @@ public class MainActivityPresenter implements IPresenter {
         @Override
         public void onError(Throwable e) {
             mView.displayNoData();
-            Log.d(TAG, "Some error on get data.");
+            Log.d(TAG, "Some error on get data." + e.toString());
+            System.out.println(TAG + e.toString());
 
         }
 
